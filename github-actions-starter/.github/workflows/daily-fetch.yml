@@ -1,0 +1,38 @@
+name: Daily TWSE Fetch
+
+on:
+  schedule:
+    - cron: "0 6 * * 1-5"   # UTC 06:00 = 台北時間 14:00，只在週一到週五跑（台股休市不浪費額度）
+  workflow_dispatch: {}      # 在 Actions 頁面手動觸發，測試用
+
+permissions:
+  contents: write             # 要把抓到的資料 commit 回 repo，需要寫入權限
+
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Fetch data
+        run: python scripts/fetch_twse.py
+        env:
+          FRED_API_KEY: ${{ secrets.FRED_API_KEY }}
+          EIA_API_KEY: ${{ secrets.EIA_API_KEY }}
+
+      - name: Commit and push if changed
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add data/
+          git diff --staged --quiet || git commit -m "chore: daily data fetch $(date -u +'%Y-%m-%d')"
+          git push
