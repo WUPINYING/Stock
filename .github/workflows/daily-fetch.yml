@@ -2,11 +2,11 @@ name: Daily TWSE Fetch
 
 on:
   schedule:
-    - cron: "0 6 * * 1-5"   # UTC 06:00 = 台北時間 14:00，只在週一到週五跑（台股休市不浪費額度）
-  workflow_dispatch: {}      # 在 Actions 頁面手動觸發，測試用
+    - cron: "0 6 * * 1-5"   # UTC 06:00 = 台北時間 14:00，只在週一到週五跑
+  workflow_dispatch: {}      # 在 Actions 頁面手動觸發
 
 permissions:
-  contents: write             # 要把抓到的資料 commit 回 repo，需要寫入權限
+  contents: write
 
 jobs:
   fetch:
@@ -14,6 +14,9 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
+      - name: Debug list files
+        run: ls -R
 
       - name: Set up Python
         uses: actions/setup-python@v5
